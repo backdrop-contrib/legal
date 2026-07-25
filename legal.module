@@ -351,10 +351,6 @@ function legal_form_user_profile_form_alter(&$form, $form_state) {
     return;
   }
 
-  if ($form['#user_category'] != 'account') {
-    return;
-  }
-
   // Set reminder to change password if coming from one time login link and
   // user hasn't changed his/her password yet.
   if (isset($_REQUEST['pass-reset-token']) && isset($_COOKIE['Drupal_visitor_legal_pass_reset'])) {
@@ -485,9 +481,10 @@ function legal_user_login(&$edit, $account) {
       return;
     }
   }
-  // Get version / revision of last accepted language.
+
   else {
-    $conditions = legal_get_conditions($legal_account['langcode']);
+    // Get version / revision of last accepted language.
+    $conditions = legal_get_conditions($legal_account['langcode'] ?? $language->langcode);
     // No conditions set yet.
     if (empty($conditions['conditions'])) {
       return;
