@@ -1,0 +1,371 @@
+{
+  "_config_name": "views.view.legal_terms",
+  "name": "legal_terms",
+  "human_name": "Legal terms & conditions",
+  "tag": "Legal",
+  "disabled": false,
+  "base_table": "legal_conditions",
+  "core": "1.34",
+  "module": "legal",
+  "display": {
+    "default": {
+      "display_title": "Defaults",
+      "display_plugin": "default",
+      "display_options": {
+        "items_per_page": null,
+        "offset": null,
+        "use_pager": null,
+        "pager": {
+          "type": "none",
+          "options": {
+            "offset": 0
+          }
+        },
+        "query": {
+          "type": "views_query",
+          "options": []
+        },
+        "fields": {
+          "version": {
+            "label": "Version",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "exclude": 0,
+            "id": "version",
+            "table": "legal_conditions",
+            "field": "version",
+            "relationship": "none"
+          },
+          "langcode": {
+            "label": "Language",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "exclude": 0,
+            "id": "langcode",
+            "table": "legal_conditions",
+            "field": "langcode",
+            "override": {
+              "button": "Override"
+            },
+            "relationship": "none"
+          },
+          "revision": {
+            "label": "Revision",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "exclude": 0,
+            "id": "revision",
+            "table": "legal_conditions",
+            "field": "revision",
+            "relationship": "none"
+          },
+          "conditions": {
+            "label": "Terms and conditions",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "exclude": 0,
+            "id": "conditions",
+            "table": "legal_conditions",
+            "field": "conditions",
+            "override": {
+              "button": "Override"
+            },
+            "relationship": "none"
+          },
+          "extras": {
+            "label": "Additional",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "exclude": 0,
+            "id": "extras",
+            "table": "legal_conditions",
+            "field": "extras",
+            "relationship": "none"
+          },
+          "changes": {
+            "label": "Changes",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "exclude": 0,
+            "id": "changes",
+            "table": "legal_conditions",
+            "field": "changes",
+            "override": {
+              "button": "Override"
+            },
+            "relationship": "none"
+          },
+          "date": {
+            "label": "Date Added",
+            "alter": {
+              "alter_text": 0,
+              "text": "",
+              "make_link": 0,
+              "path": "",
+              "link_class": "",
+              "alt": "",
+              "prefix": "",
+              "suffix": "",
+              "target": "",
+              "help": "",
+              "trim": 0,
+              "max_length": "",
+              "word_boundary": 1,
+              "ellipsis": 1,
+              "html": 0,
+              "strip_tags": 0
+            },
+            "empty": "",
+            "hide_empty": 0,
+            "empty_zero": 0,
+            "date_format": "small",
+            "custom_date_format": "",
+            "exclude": 0,
+            "id": "date",
+            "table": "legal_conditions",
+            "field": "date",
+            "override": {
+              "button": "Override"
+            },
+            "relationship": "none"
+          }
+        },
+        "defaults": {
+          "fields": false,
+          "sorts": false,
+          "access": false,
+          "access_options": false,
+          "cache": false,
+          "cache_options": false,
+          "title": false,
+          "empty": false,
+          "style_plugin": false,
+          "style_options": false,
+          "row_plugin": false,
+          "row_options": false
+        },
+        "sorts": {
+          "version": {
+            "order": "DESC",
+            "id": "version",
+            "table": "legal_conditions",
+            "field": "version",
+            "relationship": "none"
+          },
+          "langcode": {
+            "order": "ASC",
+            "id": "langcode",
+            "table": "legal_conditions",
+            "field": "langcode",
+            "relationship": "none"
+          },
+          "revision": {
+            "order": "DESC",
+            "id": "revision",
+            "table": "legal_conditions",
+            "field": "revision",
+            "relationship": "none",
+            "override": {
+              "button": "Override"
+            }
+          }
+        },
+        "access": {
+          "type": "perm",
+          "perm": "administer terms and conditions"
+        },
+        "access_options": null,
+        "cache": {
+          "type": "none"
+        },
+        "cache_options": null,
+        "title": "Terms and conditions",
+        "empty": {
+          "text": {
+            "id": "area",
+            "table": "views",
+            "field": "area",
+            "label": "",
+            "relationship": "none",
+            "group_type": "group",
+            "content": "No Terms and conditions have been added yet.",
+            "format": "1"
+          }
+        },
+        "empty_format": "1",
+        "style_plugin": "table",
+        "style_options": {
+          "grouping": "",
+          "override": 1,
+          "sticky": 1,
+          "order": "asc",
+          "columns": {
+            "version": "version",
+            "revision": "revision"
+          },
+          "info": {
+            "version": {
+              "sortable": 1,
+              "separator": ""
+            },
+            "revision": {
+              "sortable": 1,
+              "separator": ""
+            }
+          },
+          "default": "-1"
+        },
+        "row_plugin": "fields",
+        "row_options": []
+      }
+    },
+    "page_1": {
+      "display_title": "Page",
+      "display_plugin": "page",
+      "display_options": {
+        "items_per_page": null,
+        "offset": null,
+        "use_pager": null,
+        "pager": {
+          "type": "none",
+          "options": {
+            "offset": 0
+          }
+        },
+        "query": {
+          "type": "views_query",
+          "options": []
+        },
+        "path": "admin/config/people/legal/terms_history",
+        "menu": {
+          "type": "tab",
+          "title": "T&C History",
+          "description": "Terms and conditions",
+          "weight": "3",
+          "name": "navigation"
+        },
+        "tab_options": {
+          "type": "none",
+          "title": "",
+          "description": "",
+          "weight": 0,
+          "name": "navigation"
+        }
+      }
+    }
+  }
+}

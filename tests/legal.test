@@ -8,9 +8,12 @@
 /**
  * Legal module base test class.
  */
-class LegalTestCase extends DrupalWebTestCase {
+class LegalTestCase extends BackdropWebTestCase {
   protected $edit;
 
+  /**
+ *
+ */
   function setUp() {
     // Enable any modules required for the test.
     parent::setUp('legal');
@@ -20,6 +23,10 @@ class LegalTestCase extends DrupalWebTestCase {
       'conditions[value]'  => $this->randomName(),
       'conditions[format]' => 'plain_text',
     );
+
+    // Ensure registration is enabled.
+    config_set('system.core', 'user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL);
+
   }
 
   /**
@@ -29,17 +36,17 @@ class LegalTestCase extends DrupalWebTestCase {
   function setSettings($edit) {
     // Had to move to creating an user for every change in settings, since
     // creating this in setUp() was not working.
-    $admin_user = $this->drupalCreateUser(array('administer Terms and Conditions'));
+    $admin_user = $this->backdropCreateUser(array('administer terms and conditions'));
 
-    $this->drupalLogin($admin_user);
+    $this->backdropLogin($admin_user);
 
-    $this->drupalPost('admin/config/people/legal', $edit, t('Save'));
+    $this->backdropPost('admin/config/people/legal', $edit, t('Save'));
 
     // Check account wasn't created.
-    $this->assertText(t('Terms &amp; Conditions have been saved.'), 'T&C text setup correctly');
+    $this->assertText(t('Terms and conditions have been saved.'), 'T&C text setup correctly');
 
     // Log user out.
-    $this->drupalLogout();
+    $this->backdropLogout();
   }
 }
 
@@ -48,14 +55,9 @@ class LegalTestCase extends DrupalWebTestCase {
  */
 class LegalRegisterTestCase extends LegalTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Create Account',
-      'description' => 'Register as new user and create account.',
-      'group' => 'Legal',
-    );
-  }
-
+  /**
+ *
+ */
   function setUp() {
     parent::setUp();
 
@@ -74,8 +76,7 @@ class LegalRegisterTestCase extends LegalTestCase {
       'mail' => $mail,
       'legal_accept' => TRUE,
     );
-
-    $this->drupalPost('user/register', $edit, t('Create new account'));
+    $this->backdropPost('user/register', $edit, t('Create new account'));
 
      // Check account was created.
     $this->assertText(t('Thank you for applying for an account. Your account is currently pending approval by the site administrator.'), 'Account created');
@@ -93,10 +94,10 @@ class LegalRegisterTestCase extends LegalTestCase {
       'mail' => $mail,
     );
 
-    $this->drupalPost('user/register', $edit, t('Create new account'));
+    $this->backdropPost('user/register', $edit, t('Create new account'));
 
      // Check account wasn't created.
-    $this->assertText(t('Accept Terms &amp; Conditions of Use field is required.'), 'T&C not accepted, account not created');
+    $this->assertText(t('Accept Terms and conditions of use field is required.'), 'T&C not accepted, account not created');
   }
 
 }
@@ -106,20 +107,20 @@ class LegalRegisterTestCase extends LegalTestCase {
  */
 class LegalPasswordResetTestCase extends LegalTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Password reset',
-      'description' => 'Password reset workflow when T&Cs need to be accepted.',
-      'group' => 'Legal',
-    );
-  }
+  /**
+   * Ordinary user for testing password reset.
+   */
+  public $user;
 
+  /**
+ *
+ */
   function setUp() {
     parent::setUp();
     $this->setSettings($this->edit);
 
     // Create an ordinary user.
-    $this->user = $this->drupalCreateUser();
+    $this->user = $this->backdropCreateUser();
   }
 
   /**
@@ -129,26 +130,25 @@ class LegalPasswordResetTestCase extends LegalTestCase {
     // Create a log in link for the user, and go to that URL.
     // Borrowed from testUserPasswordResetExpired().
     $timestamp = REQUEST_TIME;
-    $this->drupalGet("user/reset/{$this->user->uid}/$timestamp/" . user_pass_rehash($this->user->pass, $timestamp, $this->user->login, $this->user->uid));
-
+    $this->backdropGet("user/reset/{$this->user->uid}/$timestamp/" . user_pass_rehash($this->user->pass, $timestamp, $this->user->login, $this->user->uid));
+    $this->assertText(t("Please enter a new password to access your account."), "The user is shown the message to reset their password.");
     $this->assertText(t('Reset password'), "The reset password form is shown.");
 
     // Use the one-time login link.
-    $this->drupalPost(NULL, array(), t('Log in'));
+    $this->backdropPost(NULL, array('pass' => 'newpassword'), t('Save password & log in'));
 
-    $this->assertTitle(t('Terms and Conditions | Drupal'), "The user is redirected to the terms and conditions approval page.");
+    $this->assertTitle(t('Terms and Conditions | Backdrop CMS'), "The user is redirected to the terms and conditions approval page.");
     $this->assertText(t('Terms and Conditions'), "The Terms and Conditions form is shown.");
     // assertText() doesn't handle an '&' properly.
-    $this->assertText(t('To continue to use this site please read the Terms &amp; Conditions below'), "The Terms and Conditions form is shown.");
+    $this->assertText(t('To continue to use this site please read the Terms and conditions below'), "The Terms and Conditions form is shown.");
 
     $edit = array(
       'legal_accept' => TRUE,
     );
 
     // Accept the T&Cs.
-    $this->drupalPost(NULL, $edit, t('Confirm'));
+    $this->backdropPost(NULL, $edit, t('Confirm'));
 
-    $this->assertText(t("You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password."), "The user is shown the message to reset their password.");
   }
 
 }
@@ -158,14 +158,9 @@ class LegalPasswordResetTestCase extends LegalTestCase {
  */
 class LegalScrollBoxDisplayTestCase extends LegalTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Scroll Box Display',
-      'description' => 'Change display option to Scroll Box and check if display is behaves correctly.',
-      'group' => 'Legal',
-    );
-  }
-
+  /**
+ *
+ */
   function setUp() {
     parent::setUp();
 
@@ -178,7 +173,7 @@ class LegalScrollBoxDisplayTestCase extends LegalTestCase {
    * Test "Scroll Box" display.
    */
   function testScrollBoxDisplay() {
-    $this->drupalGet('user/register');
+    $this->backdropGet('user/register');
 
      // Check presence of T&C text.
     $this->assertText($this->edit['conditions[value]'], 'T&C text displayed');
@@ -190,14 +185,9 @@ class LegalScrollBoxDisplayTestCase extends LegalTestCase {
  */
 class LegalScrollBoxCSSDisplayTestCase extends LegalTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Scroll Box CSS Display',
-      'description' => 'Change display option to Scroll Box CSS and check if display is behaves correctly.',
-      'group' => 'Legal',
-    );
-  }
-
+  /**
+ *
+ */
   function setUp() {
     parent::setUp();
 
@@ -210,7 +200,7 @@ class LegalScrollBoxCSSDisplayTestCase extends LegalTestCase {
    * Test "Scroll Box CSS" display.
    */
   function testScrollBoxCSSDisplay() {
-    $this->drupalGet('user/register');
+    $this->backdropGet('user/register');
 
      // Check presence of T&C text.
     $this->assertText($this->edit['conditions[value]'], 'T&C text displayed');
@@ -222,14 +212,9 @@ class LegalScrollBoxCSSDisplayTestCase extends LegalTestCase {
  */
 class LegalHTMLTextDisplayTestCase extends LegalTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'HTML Text display',
-      'description' => 'Change display option to HTML Text and check if display is behaves correctly.',
-      'group' => 'Legal',
-    );
-  }
-
+  /**
+ *
+ */
   function setUp() {
     parent::setUp();
 
@@ -242,7 +227,7 @@ class LegalHTMLTextDisplayTestCase extends LegalTestCase {
    * Test "HTML Text" display.
    */
   function testHTMLTextDisplay() {
-    $this->drupalGet('user/register');
+    $this->backdropGet('user/register');
 
      // Check presence of T&C text.
     $this->assertText($this->edit['conditions[value]'], 'T&C text displayed');
@@ -254,14 +239,9 @@ class LegalHTMLTextDisplayTestCase extends LegalTestCase {
  */
 class LegalLinkDisplayTestCase extends LegalTestCase {
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Page Link display',
-      'description' => 'Change display option to Page Link and check if display is behaves correctly.',
-      'group' => 'Legal',
-    );
-  }
-
+  /**
+ *
+ */
   function setUp() {
     parent::setUp();
 
@@ -274,10 +254,10 @@ class LegalLinkDisplayTestCase extends LegalTestCase {
    * Test "Page Link" display.
    */
   function testPageLinkDisplay() {
-    $this->drupalGet('user/register');
+    $this->backdropGet('user/register');
 
      // Check presence of T&C link.
-    $this->assertLink('Terms & Conditions', 0, 'T&C link found');
+    $this->assertLink('Terms and conditions', 0, 'T&C link found');
   }
 
 }

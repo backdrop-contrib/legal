@@ -1,0 +1,8 @@
+{
+  "_config_name": "legal.settings",
+  "user_profile_display": 1,
+  "accept_every_login": 0,
+  "except_roles": [],
+  "display": 0,
+  "link_target": "new_window"
+}

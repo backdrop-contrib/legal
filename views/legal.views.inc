@@ -83,7 +83,7 @@ function legal_views_data() {
   );
 
   if (module_exists('locale')) {
-    $data['legal_accepted']['language'] = array(
+    $data['legal_accepted']['langcode'] = array(
       'title'    => t('Language'),
       'help'     => t('Language of T&C accepted by user.'),
       'field'    => array(
@@ -183,7 +183,7 @@ function legal_views_data() {
       ),
     ),
     'conditions' => array(
-      'title'    => t('Terms & Conditions'),
+      'title'    => t('Terms and conditions'),
       'help'     => t('Text of T&Cs.'),
       'field'    => array(
         'handler'        => 'views_handler_field',
@@ -262,10 +262,8 @@ function legal_views_data() {
       ),
     ),
   );
-
   if (module_exists('locale')) {
-
-    $data['legal_conditions']['language'] = array(
+    $data['legal_conditions']['langcode'] = array(
       'title'    => t('Language'),
       'help'     => t('Language of T&Cs.'),
       'field'    => array(

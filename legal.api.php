@@ -29,12 +29,12 @@
  *   version - The version of Terms accepted.
  *   revision - The revision of Terms accepted.
  *   accepted - The timestamp the Terms were accepted at.
- *   language - The current language.
+ *   langcode - The current language code.
  */
 function hook_legal_accepted($data) {
   if (module_exists('rules')) {
     $user       = user_load($data['uid']);
-    $conditions = legal_get_conditions($data['language']);
+    $conditions = legal_get_conditions($data['langcode']);
     rules_invoke_event('legal_accepted', $user, $conditions, $data['accepted']);
   }
 }

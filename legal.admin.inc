@@ -9,22 +9,24 @@
  * Module configuration options form.
  */
 function legal_configuration($form_state) {
+  $config = config('legal.settings');
   $form = array();
 
+  $form['#config'] = 'legal.settings';
   $form['description'] = array(
-    '#markup' => '<p>' . t('Configuration options for display of Terms & Conditions.') . '</p>',
+    '#markup' => '<p>' . t('Configuration options for display of Terms and conditions.') . '</p>',
   );
 
   $form['user_profile_display'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show T&Cs on user profile edit pages'),
-    '#default_value' => variable_get('legal_user_profile_display', 1),
+    '#default_value' => $config->get('user_profile_display'),
   );
 
-  $form['legal_accept_every_login'] = array(
+  $form['accept_every_login'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Ask to accept T&Cs on every login'),
-    '#default_value' => variable_get('legal_accept_every_login', '0'),
+    '#default_value' => $config->get('accept_every_login'),
   );
 
   $form['except_legal'] = array(
@@ -38,7 +40,7 @@ function legal_configuration($form_state) {
   $all_roles = array_map('check_plain', user_roles());
   $irrelevant_roles = array('anonymous user', 'authenticated user');
   $role_options = array_diff($all_roles, $irrelevant_roles);
-  $except_roles = variable_get('legal_except_roles', array());
+  $except_roles = $config->get('except_roles') ?: array();
 
   $form['except_legal']['except_roles'] = array(
     '#type' => 'checkboxes',
@@ -58,27 +60,33 @@ function legal_configuration($form_state) {
   return $form;
 }
 
+/**
+ * Submit handler for the module configuration options form.
+ */
 function legal_configuration_submit($form, &$form_state) {
+  $config = config('legal.settings');
   $values = $form_state['values'];
 
-  variable_set('legal_user_profile_display', $values['user_profile_display']);
-  variable_set('legal_accept_every_login', $values['legal_accept_every_login']);
+  $config->set('user_profile_display', $values['user_profile_display'])
+    ->set('accept_every_login', $values['accept_every_login']);
 
   // Set the excepted user roles.
   if (!empty($values['except_roles'])) {
     $except_roles = array_filter($values['except_roles']);
-    variable_set('legal_except_roles', $except_roles);
+    $config->set('except_roles', $except_roles);
   }
 
-  if (variable_get('legal_display', '0') != $values['display']) {
-    variable_set('legal_display', $values['display']);
-    drupal_set_message(t('Display setting has been saved.'));
+  if ($config->get('display') != $values['display']) {
+    $config->set('display', $values['display']);
+    backdrop_set_message(t('Display setting has been saved.'));
   }
 
-  if (isset($values['link_target']) && $values['link_target'] != variable_get('legal_link_target', '')) {
-    variable_set('legal_link_target', $values['link_target']);
-    drupal_set_message(t('Link target setting has been saved.'));
+  if (isset($values['link_target']) && $values['link_target'] != $config->get('link_target')) {
+    $config->set('link_target', $values['link_target']);
+    backdrop_set_message(t('Link target setting has been saved.'));
   }
+
+  $config->save();
 }
 
 /**
@@ -89,27 +97,22 @@ function legal_administration($form_state) {
 
   $conditions = legal_get_conditions(NULL, TRUE);
 
-  if (module_exists('locale')) {
-    $languages        = locale_language_list();
-    $language_default = language_default();
-    $language         = $language_default->language;
-    $version_options  = array('version' => t('All users (new version)'), 'revision' => t('Language specific users (a revision)'));
-    $version_handling = 'version';
-  }
-  else {
-    $languages        = array('en' => t('English'));
-    $language         = 'en';
-    $version_handling = 'version';
-  }
+  $languages        = language_list(TRUE, TRUE);
+  $language_default = language_default();
+  $langcode         = $language_default->langcode;
+  $version_options  = array(
+    'version' => t('All users (new version)'),
+    'revision' => t('Language specific users (a revision)'),
+  );
+  $version_handling = 'version';
 
   $form = array_merge($form, legal_display_fields($conditions));
 
   $form['conditions'] = array(
     '#type'          => 'text_format',
-    '#title'         => t('Terms & Conditions'),
+    '#title'         => t('Terms and conditions'),
     '#default_value' => $conditions['conditions'],
-    '#description'   => t('Your Terms & Conditions'),
-    '#format'        => empty($conditions['format']) ? NULL : $conditions['format'],
+    '#format'        => empty($conditions['format']) ? filter_default_format() : $conditions['format'],
     '#required'      => TRUE,
     '#rows'          => 20,
     '#weight'        => -1,
@@ -118,7 +121,7 @@ function legal_administration($form_state) {
   // Set this here or array will flatten out and override real values.
   $form['legal']['#tree'] = TRUE;
 
-  // Overide accept checbox requirement on preview.
+  // Overide accept checkbox requirement on preview.
   $form['legal']['legal_accept']['#required'] = FALSE;
 
   // Only display options if there's more than one language available.
@@ -131,11 +134,11 @@ function legal_administration($form_state) {
       '#collapsed'   => TRUE,
     );
 
-    $form['language']['language'] = array(
+    $form['language']['langcode'] = array(
       '#type'          => 'select',
       '#title'         => t('Language'),
       '#options'       => $languages,
-      '#default_value' => $language,
+      '#default_value' => $langcode,
     );
 
     $form['language']['version_handling'] = array(
@@ -148,7 +151,7 @@ function legal_administration($form_state) {
     );
   }
   else {
-    $form['language']['language']         = array('#type' => 'value', '#value' => $language);
+    $form['language']['langcode']         = array('#type' => 'value', '#value' => $langcode);
     $form['language']['version_handling'] = array('#type' => 'value', '#value' => $version_handling);
 
   }
@@ -176,7 +179,7 @@ function legal_administration($form_state) {
       '#default_value' => $extra,
     );
 
-    // Overide extra checkboxes.
+    // Override extra checkboxes.
     if (!empty($conditions['extras']['extras-' . $counter])) {
       $form['legal']['extras-' . $counter] = array(
         '#type'          => 'checkbox',
@@ -223,6 +226,8 @@ function legal_administration($form_state) {
  * @param $form
  */
 function legal_display_form_element(&$form) {
+  $config = config('legal.settings');
+
   // Overide display setting.
   $form['display_header']  = array(
     '#type'   => 'fieldset',
@@ -235,18 +240,23 @@ function legal_display_form_element(&$form) {
   $form['display_header']['display'] = array(
     '#type'          => 'radios',
     '#title'         => t('Display Style'),
-    '#default_value' => variable_get('legal_display', '0'),
-    '#options'       => array(t('Scroll Box (use with Text Format: Plain Text)'), t('Scroll Box (CSS - can include HTML)'), t('HTML Text'), t('Link')),
+    '#default_value' => $config->get('display'),
+    '#options'       => array(
+      0 => t('Scroll Box (use with Text Format: Plain Text)'),
+      1 => t('Scroll Box (CSS - can include HTML)'),
+      2 => t('HTML Text'),
+      3 => t('Link'),
+    ),
     '#required'      => TRUE,
   );
 
   $link_target_options = array('new_window' => t('New window'));
-  $link_target_value = variable_get('legal_link_target', 'new_window');
+  $link_target_value = $config->get('link_target') ?: 'new_window';
 
   if (module_exists('lightbox2')) {
     $link_target_options['lightbox2'] = t('Lightbox2 overlay');
   }
-  elseif($link_target_value == 'lightbox2') {
+  elseif ($link_target_value == 'lightbox2') {
     $link_target_value = 'new_window';
   }
 
@@ -258,7 +268,7 @@ function legal_display_form_element(&$form) {
     '#description'   => t('How to display the T&Cs when a user clicks on the link.'),
     '#required'      => TRUE,
     '#states' => array(
-      'visible' => array(   // action to take.
+      'visible' => array(   // Action to take.
         ':input[name="display"]' => array('value' => 3),
       ),
     ),
@@ -275,33 +285,29 @@ function legal_preview($form, $form_values) {
       $form['legal']['conditions']             = array(
         '#markup' => check_markup($form_values['values']['conditions']['value'], $form_values['values']['conditions']['format']),
       );
-      $form['legal']['legal_accept']['#title'] = t('<strong>Accept</strong> Terms & Conditions of Use');
-      if (module_exists('token')) {
-        $form['legal']['conditions']['#markup'] = token_replace($form['legal']['conditions']['#markup']);
-      }
+      $form['legal']['legal_accept']['#title'] = t('<strong>Accept</strong> Terms and conditions of use');
+      $form['legal']['conditions']['#markup'] = token_replace($form['legal']['conditions']['#markup']);
       break;
     case 3: // Page Link.
       $form['legal']['conditions']             = array(
         '#markup' => '',
       );
-      $form['legal']['legal_accept']['#title'] = t('<strong>Accept</strong> <a href="@terms">Terms & Conditions</a> of Use', array('@terms' => url('legal')));
+      $form['legal']['legal_accept']['#title'] = t('<strong>Accept</strong> <a href="@terms">Terms and conditions</a> of use', array('@terms' => url('legal')));
       break;
     default: // Scroll box (HTML).
       $form['legal']['conditions'] = array(
         '#id'         => 'preview',
         '#name'       => 'preview',
         '#type'       => 'textarea',
-        '#title'      => t('Terms & Conditions'),
+        '#title'      => t('Terms and conditions'),
         '#value'      => check_markup($form_values['values']['conditions']['value'], $form_values['values']['conditions']['format']),
         '#parents'    => array('legal'),
         '#rows'       => 10,
         '#attributes' => array('readonly' => 'readonly'),
       );
 
-      $form['legal']['legal_accept']['#title'] = t('<strong>Accept</strong> Terms & Conditions of Use');
-      if (module_exists('token')) {
-        $form['legal']['conditions']['#value'] = token_replace($form['legal']['conditions']['#value']);
-      }
+      $form['legal']['legal_accept']['#title'] = t('<strong>Accept</strong> Terms and conditions of use');
+      $form['legal']['conditions']['#value'] = token_replace($form['legal']['conditions']['#value']);
   }
 
   // Overide additional checkboxes in preview.
@@ -319,48 +325,55 @@ function legal_preview($form, $form_values) {
   return $form;
 }
 
+/**
+ *
+ */
 function theme_legal_administration($variables) {
-
   $form     = $variables['form'];
   $language = '';
   $output = '';
 
   if (empty($form['current_id']['#value'])) {
-    $output .= '<p><strong>' . t('Terms & Conditions will not be shown to users, as no T&C have been saved.') . '</strong></p>';
+    backdrop_set_message(t('Terms and conditions will not currently be shown to users, as no T&C have been saved.'), 'info');
   }
   else {
-    if (module_exists('locale')) {
-      $languages = locale_language_list();
-      $language  = $form['language_value']['#value'];
-      $language  = check_plain($languages[$language]);
-    }
+    $language_labels = language_list(TRUE, TRUE);
+    $langcode  = $form['langcode']['#value'];
+    $language_label = isset($language_labels[$langcode]) ? $language_labels[$langcode] : '';
 
-    $output .= '<h4>' . t('Most Recent Version/Revision') . '</h4>';
+    $output .= '<h2>' . t('Most recent version / revision') . '</h2>';
     $output .= '<p><strong>' . t('Version ID:') . '</strong> ' . $form['current_id']['#value'] . '<br />';
-    if (!empty($language)) $output .= '<strong>' . t('Language:') . '</strong> ' . $language . '<br />';
-    if (!empty($language)) $output .= '<strong>' . t('Revision:') . '</strong> ' . $form['revision_id']['#value'] . '<br />';
+    if (!empty($language_label)) $output .= '<strong>' . t('Language:') . '</strong> ' . $language_label . ' (' . $langcode . ')<br />';
+    if (!empty($language_label)) $output .= '<strong>' . t('Revision:') . '</strong> ' . $form['revision_id']['#value'] . '<br />';
     $output .= '<strong>' . t('Created:') . '</strong> ' . date("l jS \of F Y h:i:s A", $form['current_date']['#value']) . '</p>';
   }
 
   // Preview.
   if (empty($form['legal']['conditions']['#markup'])) {
-    $output .= drupal_render($form['legal']);
+    $form['legal']['#access'] = FALSE;
   }
   else {
     $form = theme('legal_display', array('form' => $form));
-    $output .= '<div id="preview">';
+    $form['legal']['#attributes']['class'][] = 'legal-preview';
+    $form['legal']['#attributes']['inert'] = 'inert';
+    $form['legal']['#title'] .= ' (Preview)';
+    $output .= '<div id="legal-preview">';
     $output .= '<h3>' . t('Preview') . '</h3>';
-    $output .= drupal_render($form['legal']);
+    $output .= backdrop_render($form['legal']);
     $output .= '</div>';
   }
 
-  $output .= '<h4>' . t('Create New Version / Translation') . '</h4>';
-  $output .= drupal_render_children($form);
-
+  $output .= '<h2>' . t('Create new version / translation') . '</h2>';
+  $output .= backdrop_render_children($form);
   return $output;
 }
 
+/**
+ *
+ */
 function legal_administration_submit($form, &$form_state) {
+  $langcode = $form_state['input']['langcode'];
+  $config = config('legal.settings');
   $values = $form_state['values'];
 
   // Preview request, don't save anything.
@@ -368,34 +381,34 @@ function legal_administration_submit($form, &$form_state) {
     return;
   }
 
-  if (variable_get('legal_display', '0') != $values['display']) {
-    variable_set('legal_display', $values['display']);
-    drupal_set_message(t('Display setting has been saved.'));
+  if ($config->get('display') != $values['display']) {
+    $config->set('display', $values['display'])->save();
+    backdrop_set_message(t('Display setting has been saved.'));
   }
 
   if (isset($values['link_target']) ) {
-    variable_set('legal_link_target', $values['link_target']);
-    drupal_set_message(t('Link target setting has been saved.'));
+    $config->set('link_target', $values['link_target'])->save();
+    backdrop_set_message(t('Link target setting has been saved.'));
   }
 
   // If new conditions are different from current permisions, enter in database.
   if (legal_conditions_updated($values)) {
-    $version = legal_version($values['version_handling'], $values['language']);
+    $version = legal_version($values['version_handling'], $values['langcode']);
 
     db_insert('legal_conditions')
       ->fields(array(
-      'version'    => $version['version'],
-      'revision'   => $version['revision'],
-      'language'   => $values['language'],
-      'conditions' => $values['conditions']['value'],
-      'date'       => time(),
-      'extras'     => serialize($values['extras']),
-      'changes'    => $values['changes'],
-      'format'     => $values['conditions']['format'],
-    ))
+        'version'    => $version['version'],
+        'revision'   => $version['revision'],
+        'langcode'   => $langcode ?? language_default()->langcode,
+        'conditions' => $values['conditions']['value'],
+        'date'       => time(),
+        'extras'     => serialize($values['extras']),
+        'changes'    => $values['changes'],
+        'format'     => $values['conditions']['format'],
+      ))
       ->execute();
 
-    drupal_set_message(t('Terms & Conditions have been saved.'));
+    backdrop_set_message(t('Terms and conditions have been saved.'));
   }
 
   // Empty all cache.
@@ -407,7 +420,7 @@ function legal_administration_submit($form, &$form_state) {
  * Check if T&Cs have been updated.
  */
 function legal_conditions_updated($new) {
-  $previous_same_language = legal_get_conditions($new['language']);
+  $previous_same_language = legal_get_conditions($new['langcode']);
   $previous               = legal_get_conditions();
 
   if (($previous_same_language['conditions'] != $new['conditions']) && ($previous['conditions'] != $new['conditions'])) {
@@ -435,7 +448,7 @@ function legal_conditions_updated($new) {
  */
 function legal_version($version_handling, $language) {
 
-  $version = (int)db_select('legal_conditions', 'lc')
+  $version = (int) db_select('legal_conditions', 'lc')
     ->fields('lc', array('version'))
     ->orderBy('version', 'desc')
     ->range(0, 1)
@@ -443,19 +456,19 @@ function legal_version($version_handling, $language) {
     ->execute()
     ->fetchField();
 
-  // make new version
+  // Make new version.
   if ($version_handling == 'version') {
     $versioning['version']  = empty($version) ? 1 : $version + 1;
     $versioning['revision'] = 1;
   }
 
-  // make new revision
+  // Make new revision.
   if ($version_handling == 'revision') {
 
     $revision = db_select('legal_conditions', 'lc')
       ->fields('lc', array('revision'))
       ->condition('version', $version)
-      ->condition('language', $language)
+      ->condition('langcode', $language)
       ->orderBy('revision', 'DESC')
       ->addTag('legal_revision_by_version')
       ->execute()
@@ -477,11 +490,11 @@ function legal_languages() {
   $latest_rows   = legal_versions_latest_get();
   $rows          = array();
 
-  foreach ($latest_rows as $language_name => $language) {
+  foreach ($latest_rows as $language_name => $language_data) {
     $row    = array();
     $row[]  = check_plain($language_name);
-    $row[]  = empty($language['version']) ? '-' : $language['version'];
-    $row[]  = empty($language['revision']) ? '-' : $language['revision'];
+    $row[]  = empty($language_data['version']) ? '-' : $language_data['version'];
+    $row[]  = empty($language_data['revision']) ? '-' : $language_data['revision'];
     $rows[] = $row;
   }
 
@@ -498,7 +511,7 @@ function legal_languages() {
 /**
  * Get latest version for each language.
  */
-function legal_versions_latest_get($language = NULL) {
+function legal_versions_latest_get($get_langcode = NULL) {
   $conditions      = array();
   $current_version = db_select('legal_conditions', 'lc')
     ->fields('lc', array('version'))
@@ -507,52 +520,52 @@ function legal_versions_latest_get($language = NULL) {
     ->execute()
     ->fetchField();
 
-  // get latest version for each language
-  if (empty($language)) {
+  // Get latest version for each language.
+  if (empty($get_langcode)) {
+    $languages = language_list(TRUE, TRUE);
 
-    $languages = array('en' => t('English'));
-
-    if (module_exists('locale')) {
-      $languages = locale_language_list();
-    }
-
-    foreach ($languages as $language_id => $language_name) {
+    foreach ($languages as $langcode => $language) {
       $result = db_select('legal_conditions', 'lc')
         ->fields('lc')
         ->condition('version', $current_version)
-        ->condition('language', $language_id)
+        ->condition('langcode', $langcode)
         ->orderBy('revision', 'DESC')
         ->range(0, 1)
         ->addTag('legal_conditions_by_language_and_version')
         ->execute()
         ->fetchAllAssoc('tc_id');
-      $row    = count($result) ? (object)array_shift($result) : FALSE;
+      $row    = count($result) ? (object) array_shift($result) : FALSE;
 
-      $conditions[$language_name] = legal_versions_latest_get_data($row);
+      $conditions[$langcode] = legal_versions_latest_get_data($row);
     }
 
-  } // get latest version for specific language
+  }
   else {
+    // Get latest version for specific language.
     $result = db_select('legal_conditions', 'lc')
       ->fields('lc')
-      ->condition('language', $language)
-      ->groupBy('language')
+      ->condition('langcode', $get_langcode)
+      ->groupBy('langcode')
       ->orderBy('version', 'DESC')
       ->range(0, 1)
       ->addTag('legal_latest_condition_for_language')
       ->execute()
       ->fetchAllAssoc('tc_id');
-    $row    = count($result) ? (object)array_shift($result) : FALSE;
+    $row    = count($result) ? (object) array_shift($result) : FALSE;
 
-    $conditions[$language] = legal_versions_latest_get_data($row);
+    $conditions[$get_langcode] = legal_versions_latest_get_data($row);
   }
 
   return $conditions;
 }
 
+/**
+ *
+ */
 function legal_versions_latest_get_data($data) {
+  $row['version']    = isset($data->version) ? $data->version : '';
   $row['revision']   = isset($data->revision) ? $data->revision : '';
-  $row['language']   = isset($data->language) ? $data->language : '';
+  $row['langcode']   = isset($data->langcode) ? $data->langcode : '';
   $row['conditions'] = isset($data->conditions) ? $data->conditions : '';
   $row['date']       = isset($data->date) ? $data->date : '';
   $row['extras']     = isset($data->extras) ? $data->extras : '';

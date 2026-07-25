@@ -7,10 +7,10 @@
 
 function legal_page() {
   global $language;
-  $conditions = legal_get_conditions($language->language);
+  $conditions = legal_get_conditions($language->langcode);
   $output     = '';
 
-  switch (variable_get('legal_display', '0')) {
+  switch (config_get('legal.settings', 'display')) {
     case 0: // Scroll Box.
       $output = nl2br(strip_tags($conditions['conditions']));
       break;

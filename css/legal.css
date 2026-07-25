@@ -1,0 +1,15 @@
+.legal-terms {
+  max-height: 20em;
+  overflow: scroll;
+}
+
+fieldset.legal-preview {
+  margin-top: 1em;
+  padding: 1em;
+}
+
+fieldset.legal-preview:not(.field-group),
+fieldset.legal-preview legend {
+  border: 1px solid var(--gin-border-color-layer, #b9c2bb);
+  background-color: var(--gin-bg-app, #d7e4da);
+}

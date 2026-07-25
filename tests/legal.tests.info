@@ -1,0 +1,35 @@
+[LegalRegisterTestCase]
+name = Create Account
+description = Register as new user and create account.
+group = Legal
+file = legal.test
+
+[LegalPasswordResetTestCase]
+name = Password Reset
+description = Reset password for existing user.
+group = Legal
+file = legal.test
+
+[LegalScrollBoxDisplayTestCase]
+name = Scroll Box Display
+description = Change display option to Scroll Box and check if display is behaves correctly.
+group = Legal
+file = legal.test
+
+[LegalScrollBoxCSSDisplayTestCase]
+name = Scroll Box CSS Display
+description = Change display option to Scroll Box and check if display is behaves correctly.
+group = Legal
+file = legal.test
+
+[LegalHTMLTextDisplayTestCase]
+name = HTML Text Display
+description = Change display option to HTML Text and check if display is behaves correctly.
+group = Legal
+file = legal.test
+
+[LegalLinkDisplayTestCase]
+name = Page Link Display
+description = Change display option to Page Link and check if display is behaves correctly.
+group = Legal
+file = legal.test
