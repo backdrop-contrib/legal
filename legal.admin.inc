@@ -372,7 +372,7 @@ function theme_legal_administration($variables) {
  *
  */
 function legal_administration_submit($form, &$form_state) {
-  $langcode = $form_state['input']['langcode'];
+  $langcode = $form_state['input']['langcode'] ?? language_default()->langcode;
   $config = config('legal.settings');
   $values = $form_state['values'];
 

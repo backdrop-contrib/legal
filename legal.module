@@ -302,7 +302,7 @@ function legal_form_user_register_form_alter(&$form, &$form_state) {
   global $user;
   global $language;
 
-  $conditions = legal_get_conditions($language->language);
+  $conditions = legal_get_conditions($language->langcode);
 
   // Do nothing if there's no Terms and Conditions text set.
   if (empty($conditions['conditions'])) {
@@ -351,10 +351,6 @@ function legal_form_user_profile_form_alter(&$form, $form_state) {
     return;
   }
 
-  if ($form['#user_category'] != 'account') {
-    return;
-  }
-
   // Set reminder to change password if coming from one time login link and
   // user hasn't changed his/her password yet.
   if (isset($_REQUEST['pass-reset-token']) && isset($_COOKIE['Drupal_visitor_legal_pass_reset'])) {
@@ -382,8 +378,8 @@ function legal_form_user_profile_form_alter(&$form, $form_state) {
   }
   // Get version / revision of last accepted language.
   else {
-
-    $conditions = legal_get_conditions($legal_account['langcode']);
+    $langcode = $legal_account['langcode'] ?? $language->langcode;
+    $conditions = legal_get_conditions($langcode);
     // No conditions set yet.
     if (empty($conditions['conditions'])) {
       return;
@@ -393,7 +389,7 @@ function legal_form_user_profile_form_alter(&$form, $form_state) {
     $accepted = legal_version_check($account->uid, $conditions['version'], $conditions['revision'], $legal_account);
 
     // Enable language switching if version accepted and revision up to date.
-    if ($accepted && $legal_account['langcode'] != $language->langcode) {
+    if ($accepted && $langcode != $language->langcode) {
       $conditions = legal_get_conditions($language->langcode);
     }
   }
@@ -479,15 +475,16 @@ function legal_user_login(&$edit, $account) {
 
   // If no version has been accepted yet, get version with current language revision.
   if (!isset($legal_account['version'])) {
-    $conditions = legal_get_conditions($language->language);
+    $conditions = legal_get_conditions($language->langcode);
     // No conditions set yet.
     if (empty($conditions['conditions'])) {
       return;
     }
   }
-  // Get version / revision of last accepted language.
+
   else {
-    $conditions = legal_get_conditions($legal_account['langcode']);
+    // Get version / revision of last accepted language.
+    $conditions = legal_get_conditions($legal_account['langcode'] ?? $language->langcode);
     // No conditions set yet.
     if (empty($conditions['conditions'])) {
       return;
