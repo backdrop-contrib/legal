@@ -302,7 +302,7 @@ function legal_form_user_register_form_alter(&$form, &$form_state) {
   global $user;
   global $language;
 
-  $conditions = legal_get_conditions($language->language);
+  $conditions = legal_get_conditions($language->langcode);
 
   // Do nothing if there's no Terms and Conditions text set.
   if (empty($conditions['conditions'])) {
@@ -479,7 +479,7 @@ function legal_user_login(&$edit, $account) {
 
   // If no version has been accepted yet, get version with current language revision.
   if (!isset($legal_account['version'])) {
-    $conditions = legal_get_conditions($language->language);
+    $conditions = legal_get_conditions($language->langcode);
     // No conditions set yet.
     if (empty($conditions['conditions'])) {
       return;
