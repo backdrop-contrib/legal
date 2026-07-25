@@ -378,8 +378,8 @@ function legal_form_user_profile_form_alter(&$form, $form_state) {
   }
   // Get version / revision of last accepted language.
   else {
-
-    $conditions = legal_get_conditions($legal_account['langcode']);
+    $langcode = $legal_account['langcode'] ?? $language->langcode;
+    $conditions = legal_get_conditions($langcode);
     // No conditions set yet.
     if (empty($conditions['conditions'])) {
       return;
@@ -389,7 +389,7 @@ function legal_form_user_profile_form_alter(&$form, $form_state) {
     $accepted = legal_version_check($account->uid, $conditions['version'], $conditions['revision'], $legal_account);
 
     // Enable language switching if version accepted and revision up to date.
-    if ($accepted && $legal_account['langcode'] != $language->langcode) {
+    if ($accepted && $langcode != $language->langcode) {
       $conditions = legal_get_conditions($language->langcode);
     }
   }
