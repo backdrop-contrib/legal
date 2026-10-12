@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Administration UI for the Legal module.
@@ -221,9 +220,13 @@ function legal_administration($form_state) {
 }
 
 /**
- * Display settings form element used on T&Cs content and configuration form pages.
+ * Display settings form element used on T&Cs content and configuration form
+ * pages.
  *
- * @param $form
+ * @param array $form
+ *   The form array to which the display settings will be added (by reference).
+ *
+ * @return void
  */
 function legal_display_form_element(&$form) {
   $config = config('legal.settings');
@@ -326,11 +329,10 @@ function legal_preview($form, $form_values) {
 }
 
 /**
- *
+ * Theme function for the legal administration form.
  */
 function theme_legal_administration($variables) {
   $form     = $variables['form'];
-  $language = '';
   $output = '';
 
   if (empty($form['current_id']['#value'])) {
@@ -369,7 +371,7 @@ function theme_legal_administration($variables) {
 }
 
 /**
- *
+ * Handle the submission of the legal administration form.
  */
 function legal_administration_submit($form, &$form_state) {
   $langcode = $form_state['input']['langcode'] ?? language_default()->langcode;
@@ -443,8 +445,8 @@ function legal_conditions_updated($new) {
 
 /**
  * Determine version ID of T&C.
- * If it's new version determine next version id,
- * if it's a revision return the ID of the current version increment revision ID by 1.
+ * If it's new version determine next version id. If it's a revision return the
+ * ID of the current version increment revision ID by 1.
  */
 function legal_version($version_handling, $language) {
 
@@ -560,7 +562,13 @@ function legal_versions_latest_get($get_langcode = NULL) {
 }
 
 /**
+ * Extract the relevant data from a legal conditions row.
  *
+ * @param object $data
+ *   The database row object containing legal conditions data.
+ *
+ * @return array
+ *   An associative array containing the extracted data.
  */
 function legal_versions_latest_get_data($data) {
   $row['version']    = isset($data->version) ? $data->version : '';

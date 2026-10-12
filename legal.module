@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Module file for Legal.
@@ -892,7 +891,7 @@ function legal_save_accept($version, $revision, $langcode, $tc_id, $uid) {
   $data     = array(
     'version'  => $version,
     'revision' => $revision,
-    'langcode' => $langcode,
+    'langcode' => $langcode ?? LANGUAGE_NONE,
     'tc_id'    => $tc_id,
     'uid'      => $uid,
     'accepted' => $accepted,
